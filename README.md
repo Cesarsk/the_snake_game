@@ -5,6 +5,8 @@ Made by Luca Cesarano and Andrea Croce.
 
 Brief video with the content: https://youtu.be/dKl4xL8vZxY
 
+ROM Editor written in Python.
+
 Documentation written using LATEX.
 
 For any questions contact me and also for using this project.
