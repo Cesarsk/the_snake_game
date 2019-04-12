@@ -1,0 +1,133 @@
+------------------------------------------------------------
+TimeQuest Timing Analyzer Summary
+------------------------------------------------------------
+
+Type  : Slow Model Setup 'CLOCK_50'
+Slack : -14.051
+TNS   : -9786.580
+
+Type  : Slow Model Setup 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : -2.513
+TNS   : -76.830
+
+Type  : Slow Model Setup 'ps2kb:ps2kb_u0|ps2rx'
+Slack : -1.973
+TNS   : -12.587
+
+Type  : Slow Model Setup 'items:items_u0|item_x_register[3]'
+Slack : -1.734
+TNS   : -66.354
+
+Type  : Slow Model Hold 'CLOCK_50'
+Slack : 0.115
+TNS   : 0.000
+
+Type  : Slow Model Hold 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : 0.445
+TNS   : 0.000
+
+Type  : Slow Model Hold 'ps2kb:ps2kb_u0|ps2rx'
+Slack : 0.445
+TNS   : 0.000
+
+Type  : Slow Model Hold 'items:items_u0|item_x_register[3]'
+Slack : 0.627
+TNS   : 0.000
+
+Type  : Slow Model Recovery 'CLOCK_50'
+Slack : -2.781
+TNS   : -77.751
+
+Type  : Slow Model Recovery 'items:items_u0|item_x_register[3]'
+Slack : -0.231
+TNS   : -0.845
+
+Type  : Slow Model Removal 'items:items_u0|item_x_register[3]'
+Slack : -0.589
+TNS   : -4.084
+
+Type  : Slow Model Removal 'CLOCK_50'
+Slack : 1.182
+TNS   : 0.000
+
+Type  : Slow Model Minimum Pulse Width 'CLOCK_50'
+Slack : -1.631
+TNS   : -2143.797
+
+Type  : Slow Model Minimum Pulse Width 'items:items_u0|item_x_register[3]'
+Slack : -0.611
+TNS   : -153.972
+
+Type  : Slow Model Minimum Pulse Width 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : -0.611
+TNS   : -45.214
+
+Type  : Slow Model Minimum Pulse Width 'ps2kb:ps2kb_u0|ps2rx'
+Slack : -0.611
+TNS   : -8.554
+
+Type  : Fast Model Setup 'CLOCK_50'
+Slack : -4.702
+TNS   : -3180.635
+
+Type  : Fast Model Setup 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : -0.408
+TNS   : -9.726
+
+Type  : Fast Model Setup 'items:items_u0|item_x_register[3]'
+Slack : -0.153
+TNS   : -0.308
+
+Type  : Fast Model Setup 'ps2kb:ps2kb_u0|ps2rx'
+Slack : -0.070
+TNS   : -0.152
+
+Type  : Fast Model Hold 'CLOCK_50'
+Slack : 0.001
+TNS   : 0.000
+
+Type  : Fast Model Hold 'ps2kb:ps2kb_u0|ps2rx'
+Slack : 0.155
+TNS   : 0.000
+
+Type  : Fast Model Hold 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : 0.215
+TNS   : 0.000
+
+Type  : Fast Model Hold 'items:items_u0|item_x_register[3]'
+Slack : 0.243
+TNS   : 0.000
+
+Type  : Fast Model Recovery 'CLOCK_50'
+Slack : -0.868
+TNS   : -21.476
+
+Type  : Fast Model Recovery 'items:items_u0|item_x_register[3]'
+Slack : -0.070
+TNS   : -0.308
+
+Type  : Fast Model Removal 'items:items_u0|item_x_register[3]'
+Slack : 0.312
+TNS   : 0.000
+
+Type  : Fast Model Removal 'CLOCK_50'
+Slack : 0.587
+TNS   : 0.000
+
+Type  : Fast Model Minimum Pulse Width 'CLOCK_50'
+Slack : -1.380
+TNS   : -1754.380
+
+Type  : Fast Model Minimum Pulse Width 'items:items_u0|item_x_register[3]'
+Slack : -0.500
+TNS   : -126.000
+
+Type  : Fast Model Minimum Pulse Width 'ps2kb:ps2kb_u0|ps2_clock_debounce'
+Slack : -0.500
+TNS   : -37.000
+
+Type  : Fast Model Minimum Pulse Width 'ps2kb:ps2kb_u0|ps2rx'
+Slack : -0.500
+TNS   : -7.000
+
+------------------------------------------------------------

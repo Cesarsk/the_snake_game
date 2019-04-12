@@ -1,0 +1,11 @@
+
+State Machine - |the_snake_game|finite_state_machine:finite_state_machine_u0|state_register
+Name state_register.game_over state_register.stageclear state_register.levelup state_register.new_life state_register.paused state_register.playing state_register.stage_select state_register.new_game 
+state_register.new_game 0 0 0 0 0 0 0 0 
+state_register.stage_select 0 0 0 0 0 0 1 1 
+state_register.playing 0 0 0 0 0 1 0 1 
+state_register.paused 0 0 0 0 1 0 0 1 
+state_register.new_life 0 0 0 1 0 0 0 1 
+state_register.levelup 0 0 1 0 0 0 0 1 
+state_register.stageclear 0 1 0 0 0 0 0 1 
+state_register.game_over 1 0 0 0 0 0 0 1 

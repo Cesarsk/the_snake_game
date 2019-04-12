@@ -1,0 +1,273 @@
+library ieee;
+	use ieee.std_logic_1164.all;
+	use ieee.numeric_std.all;
+
+entity Maps is
+	port(
+	 stage_select_from_text: in integer range 1 to 7;
+	 stage_select_from_level: in integer range 1 to 7;
+	 state: in std_logic;
+	 pixel_x: in std_logic_vector (9 downto 0);
+    pixel_y: in std_logic_vector (9 downto 0);
+    item_x: in unsigned(9 downto 0);
+    item_y: in unsigned(9 downto 0);
+    head_x: in unsigned(9 downto 0);
+    head_y: in unsigned(9 downto 0);
+    item_on_wall: out std_logic;
+    head_on_wall: out std_logic;
+    map_on: out std_logic;
+	 map_rgb: out std_logic_vector (2 downto 0)
+	);
+end Maps;
+
+architecture arch of Maps is
+	constant MAX_WALL_BLOCK: integer := 15;
+	constant BLOCK_SIZE: integer := 16;
+	constant WALL_COLOR: std_logic_vector(2 downto 0):="100";
+	constant BORDER_COLOR: std_logic_vector(2 downto 0):="111";
+	type rom_block is array ( 0 to 15) of std_logic_vector(0 to 15);
+	constant WALL_ROM: rom_block :=
+		(
+		"1111111100011111",
+		"1111111100000111",
+		"1111111100000001",
+		"1111111100000000",
+		"1111111100000000",
+		"1111111100000001",
+		"1111111100000111",
+		"1111111100011111",
+		"1111100011111111",
+		"1110000011111111",
+		"1000000011111111",
+		"0000000011111111",
+		"0000000011111111",
+		"1000000011111111",
+		"1110000011111111",
+		"1111100011111111"
+		);
+	
+		constant BORDER_ROM: rom_block :=
+		(
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000",
+		"0000000000000000"
+		);
+	-- Il posizionamento va da bit 9 a bit 0 quindi da 0 fino a 640 (ci vogliono 10 bit per ottenere 640)
+	type wall_pos is array (0 to MAX_WALL_BLOCK) of unsigned(9 downto 0);
+	signal wall_x: wall_pos;
+	signal wall_y: wall_pos;
+	
+	signal wall_on_tmp1: std_logic_vector(0 to MAX_WALL_BLOCK-1);
+	signal wall_on_tmp2: std_logic_vector(0 to MAX_WALL_BLOCK);
+	signal wall_on_tmp3: std_logic_vector(0 to MAX_WALL_BLOCK);
+	signal wall_on_tmp4: std_logic_vector(0 to MAX_WALL_BLOCK-1);
+	
+	signal item_on_wall_tmp1: std_logic_vector(0 to MAX_WALL_BLOCK-1);
+	signal item_on_wall_tmp2: std_logic_vector(0 to MAX_WALL_BLOCK);
+	
+	signal head_on_wall_tmp1: std_logic_vector(0 to MAX_WALL_BLOCK-1);
+	signal head_on_wall_tmp2: std_logic_vector(0 to MAX_WALL_BLOCK);
+	
+	signal border_on: std_logic;
+	signal stage_select: integer range 1 to 7;
+begin
+	stage_select <= stage_select_from_text when state='1' else stage_select_from_level;
+--	stage_select <= stage_select_from_level;
+--	-- show border
+	border_on <= '1' when (0 < unsigned(pixel_x) and unsigned(pixel_x) < 3)
+						or (638 < unsigned(pixel_x) and unsigned(pixel_x) < 641)
+						or (0 < unsigned(pixel_y) and unsigned(pixel_y) < 3)
+						or (478 < unsigned(pixel_y) and unsigned(pixel_y) < 481)
+						or (79 < unsigned(pixel_y) and unsigned(pixel_y) < 82) 
+					  else '0';
+	-- show map
+	map_on <= wall_on_tmp1(0) or border_on;
+	map_rgb <= WALL_COLOR when wall_on_tmp4(0)='1' else
+			   BORDER_COLOR when border_on='1' else
+			   "111";
+			   
+	a0: for i in 0 to MAX_WALL_BLOCK-2 generate
+		wall_on_tmp1(i) <= wall_on_tmp2(i) or wall_on_tmp1(i+1);
+	end generate;
+	wall_on_tmp1(MAX_WALL_BLOCK-1) <= wall_on_tmp2(MAX_WALL_BLOCK-1) or wall_on_tmp2(MAX_WALL_BLOCK);
+	a1: for i in 0 to MAX_WALL_BLOCK generate
+		wall_on_tmp2(i) <= '1' when (wall_x(i) <= unsigned(pixel_x) and unsigned(pixel_x) < wall_x(i)+ BLOCK_SIZE) and (wall_y(i) <= unsigned(pixel_y) and unsigned(pixel_y) < wall_y(i)+ BLOCK_SIZE) 
+--								and wall_on_tmp3(i)='1'
+						else '0';
+	end generate;
+	
+	a3: for i in 0 to MAX_WALL_BLOCK generate
+		wall_on_tmp3(i) <= WALL_ROM(to_integer(unsigned(pixel_y(3 downto 0)) - wall_y(i)(3 downto 0)))(to_integer(unsigned(pixel_x(3 downto 0)) - wall_x(i)(3 downto 0)));
+	end generate;
+	
+	a4: for i in 0 to MAX_WALL_BLOCK-2 generate
+		wall_on_tmp4(i) <= wall_on_tmp3(i) or wall_on_tmp4(i+1);
+	end generate;
+	wall_on_tmp4(MAX_WALL_BLOCK-1) <= wall_on_tmp3(MAX_WALL_BLOCK-1) or wall_on_tmp3(MAX_WALL_BLOCK);
+	
+	-- item on wall check
+	item_on_wall <= item_on_wall_tmp1(0);
+	b0: for i in 0 to MAX_WALL_BLOCK-2 generate
+		item_on_wall_tmp1(i) <= item_on_wall_tmp2(i) or item_on_wall_tmp1(i+1);
+	end generate;
+	item_on_wall_tmp1(MAX_WALL_BLOCK-1) <= item_on_wall_tmp2(MAX_WALL_BLOCK-1) or item_on_wall_tmp2(MAX_WALL_BLOCK);
+	b1: for i in 0 to MAX_WALL_BLOCK generate
+		item_on_wall_tmp2(i) <= '1' when (wall_x(i)=item_x) and (wall_y(i)=item_y)
+						else '0';
+	end generate;
+	-- head on wall check
+	head_on_wall <= head_on_wall_tmp1(0);
+	c0: for i in 0 to MAX_WALL_BLOCK-2 generate
+		head_on_wall_tmp1(i) <= head_on_wall_tmp2(i) or head_on_wall_tmp1(i+1);
+	end generate;
+	head_on_wall_tmp1(MAX_WALL_BLOCK-1) <= head_on_wall_tmp2(MAX_WALL_BLOCK-1) or head_on_wall_tmp2(MAX_WALL_BLOCK);
+	
+	c1: for i in 0 to MAX_WALL_BLOCK generate
+		head_on_wall_tmp2(i) <= '1' when (wall_x(i)=head_x) and (wall_y(i)=head_y) else '0';
+	end generate;
+
+------------------------------------------------------------------------------------------------------------------------------
+	-- LEVEL SET 1
+	-- Wall Placement on Stage, specify stage as well.
+	wall_x(0) <= to_unsigned(160,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+				 
+	wall_y(0) <= to_unsigned(176,10) when stage_select=1 else 
+				 to_unsigned(224,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(1) <= to_unsigned(176,10) when stage_select=1 else
+				 to_unsigned(272,10) when stage_select=2 else
+				 to_unsigned(0,10) ;	 
+		
+	wall_y(1) <= to_unsigned(192,10) when stage_select=1 else 
+				 to_unsigned(208,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(2) <= to_unsigned(192,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+				 
+	wall_y(2) <= to_unsigned(208,10) when stage_select=1 else 
+				 to_unsigned(208,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(3) <= to_unsigned(208,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+	
+	wall_y(3) <= to_unsigned(224,10) when stage_select=1 else 
+				 to_unsigned(240,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(4) <= to_unsigned(224,10) when stage_select=1 else 
+				 to_unsigned(368,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;	 
+	
+	wall_y(4) <= to_unsigned(240,10) when stage_select=1 else 
+				 to_unsigned(240,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(5) <= to_unsigned(240,10) when stage_select=1 else 
+				 to_unsigned(352,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;	 
+	
+	wall_y(5) <= to_unsigned(256,10) when stage_select=1 else 
+				 to_unsigned(208,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(6) <= to_unsigned(256,10) when stage_select=1 else 
+				 to_unsigned(368,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+				 
+	wall_y(6) <= to_unsigned(272,10) when stage_select=1 else 
+				 to_unsigned(208,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(7) <= to_unsigned(272,10) when stage_select=1 else
+				 to_unsigned(368,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+	
+	wall_y(7) <= to_unsigned(288,10) when stage_select=1 else 
+				 to_unsigned(224,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(8) <= to_unsigned(368,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+	
+	wall_y(8) <= to_unsigned(176,10) when stage_select=1 else 
+				 to_unsigned(256,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(9) <= to_unsigned(384,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+	
+	wall_y(9) <= to_unsigned(192,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(10) <= to_unsigned(400,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+	
+	wall_y(10) <= to_unsigned(208,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(11) <= to_unsigned(416,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+		
+	wall_y(11) <= to_unsigned(224,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------			 
+	wall_x(12) <= to_unsigned(432,10) when stage_select=1 else 
+				 to_unsigned(368,10) when stage_select=2 else  
+				 to_unsigned(0,10) ;
+	
+	wall_y(12) <= to_unsigned(240,10) when stage_select=1 else 
+				 to_unsigned(272,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------		 
+	wall_x(13) <= to_unsigned(448,10) when stage_select=1 else 
+				 to_unsigned(352,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+		
+	wall_y(13) <= to_unsigned(256,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(14) <= to_unsigned(464,10) when stage_select=1 else 
+				 to_unsigned(368,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	
+	wall_y(14) <= to_unsigned(272,10) when stage_select=1 else 
+				 to_unsigned(288,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+	wall_x(15) <= to_unsigned(480,10) when stage_select=1 else 
+				 to_unsigned(368,10) when stage_select=2 else 
+				 to_unsigned(0,10) ;
+				 
+	wall_y(15) <= to_unsigned(288,10) when stage_select=1 else 
+				 to_unsigned(256,10) when stage_select=2 else 
+				 to_unsigned(0,10);
+	----------------------------------------------------
+end;
