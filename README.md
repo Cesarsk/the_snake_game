@@ -11,4 +11,4 @@ Documentation written using LATEX.
 
 For any questions contact me and also for using this project.
 
-Enjoy.
+Enjoy!
